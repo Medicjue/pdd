@@ -1,0 +1,6 @@
+tldextract
+tqdm
+pygtrie
+numpy
+editdistance
+pyenchant

@@ -4,6 +4,8 @@ import pprint
 from traceback import format_exc
 from ns_log import NsLog
 
+import logging
+
 pp = pprint.PrettyPrinter(indent=4)
 
 class json2arff:
@@ -31,6 +33,7 @@ class json2arff:
 
             ArffStr = ArffStr + '@attribute class {phish, legitimate}' + "\n\n@data\n"
         except:
+            logging.error('QQ', exc_info=True)
             self.logger.debug("Hata - Json_to_arff e gelen sample sayısı"+str(len(features))+
                               "\nurl_feature_keys: "+str(features_keys_url)+
                               "\nactive_features_key: "+str(features_keys_active))
