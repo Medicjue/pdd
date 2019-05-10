@@ -8,24 +8,31 @@ if not os.path.exists('../output/digest_result/'):
 #%%
 data = []
 predict_labels = []
+column_names = []
 with open('../output/arff/arff_2019-05-04_12:53:50.txt', 'r') as f:
     line = f.readline()
+    line = line.strip()
     while line is not None:
+        if '@attribute' in line:
+            column_names.append(line[len('@attribute')+1:])
         if '@data' in line:
             print('QQ')
             break
         line = f.readline()
+        line = line.strip()
     line = f.readline()
+    line = line.strip()
     
     while line is not None and line != '':
         label = line.split(',')[-1]
         data.append(line.split(','))
         predict_labels.append(label)
         line = f.readline()
+        line = line.strip()
     
 #%%
 import pandas as pd    
-data = pd.DataFrame(data)
+data = pd.DataFrame(data, columns=column_names)
 
 data.to_csv('../output/digest_result/data.csv', index=False, encoding='utf8')
         
@@ -37,8 +44,9 @@ from sklearn.utils import shuffle
 import numpy as np
 
 data = shuffle(data)
+data = data.reset_index(drop=True)
 
-labels = data[40]
+labels = data['class {phish, legitimate}']
 features = data.iloc[:,0:39]
 
 kfold = KFold()
