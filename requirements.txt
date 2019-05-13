@@ -3,4 +3,4 @@ tqdm
 pygtrie
 numpy
 editdistance
-pyenchant
+pyspellchecker

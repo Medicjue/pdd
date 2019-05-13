@@ -9,7 +9,8 @@ if not os.path.exists('../output/digest_result/'):
 data = []
 predict_labels = []
 column_names = []
-with open('../output/arff/arff_2019-05-04_12:53:50.txt', 'r') as f:
+#with open('../output/arff/arff_2019-05-04_12:53:50.txt', 'r') as f:
+with open('../output/arff/arff_2019-05-13_21:55:24.txt', 'r') as f:
     line = f.readline()
     line = line.strip()
     while line is not None:
@@ -34,7 +35,7 @@ with open('../output/arff/arff_2019-05-04_12:53:50.txt', 'r') as f:
 import pandas as pd    
 data = pd.DataFrame(data, columns=column_names)
 
-data.to_csv('../output/digest_result/data.csv', index=False, encoding='utf8')
+data.to_csv('../output/digest_result/data_2.csv', index=False, encoding='utf8')
         
 #%%
 

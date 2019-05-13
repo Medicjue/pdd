@@ -1,8 +1,10 @@
 
 import re
 import pprint
-import enchant
+#import enchant
 from ns_log import NsLog
+
+from spellchecker import SpellChecker
 
 
 class WordSplitterClass(object):
@@ -11,7 +13,9 @@ class WordSplitterClass(object):
         self.logger = NsLog("log")
         self.path_data = "../data/"
         self.name_brand_file = "All_Brand.txt"
-        self.dictionary_en = enchant.DictWithPWL("en_US", "{0}{1}".format(self.path_data, self.name_brand_file))
+        # self.dictionary_en = enchant.DictWithPWL("en_US", "{0}{1}".format(self.path_data, self.name_brand_file))
+        self.dictionary_en = SpellChecker() 
+        self.dictionary_en.word_frequency.load_text_file('{0}{1}'.format(self.path_data, self.name_brand_file))
         #self.__file_capitalize(self.path_data, self.name_brand_file)
 
         self.pp = pprint.PrettyPrinter(indent=4)
@@ -28,12 +32,12 @@ class WordSplitterClass(object):
                 word = re.sub("\d+", "", word)
                 sub_words = []
 
-                if not self.dictionary_en.check(word):
+                if not self.dictionary_en.known(word):
                     #  işlenen kelime sözlükte bu kelimeyi geri döndür. İşlenen kelime sözlükte yoksa ayırma işlemine geç.
 
                     for number in range(len(word), 3, -1): # uzunluğu 3 den yüksek olan alt kelimelerin üretilmesi
                         for l in range(0, len(word) - number + 1):
-                            if self.dictionary_en.check(self.__capitalize(word[l:l + number])):
+                            if self.dictionary_en.known(self.__capitalize(word[l:l + number])):
 
                                 #  bir kelime tespit ettiğim zaman diğer kelimelerin tespit edilmesinde fp ye sebep olmasın diye
                                 #  tespit edilen kelime yerine * karekteri koydum
@@ -98,7 +102,7 @@ class WordSplitterClass(object):
         last_char = word[len(word)-1]
         word_except_last_char = word[0:len(word)-1]
         if last_char in confusing_char:
-            if self.dictionary_en.check(word_except_last_char):
+            if self.dictionary_en.known(word_except_last_char):
                 return word_except_last_char
 
         return word
