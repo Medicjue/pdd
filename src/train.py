@@ -9,6 +9,8 @@ from traceback import format_exc
 from domain_parser import domain_parser
 from rule_extraction import rule_extraction
 
+from tqdm import tqdm
+
 
 class Train:
     def __init__(self):
@@ -60,52 +62,72 @@ class Train:
         return parsed_domains
 
     def json_to_file(self, name, path, data):
-        time_now = str(datetime.datetime.now())[0:19].replace(" ", "_")
+        time_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         file_name = name+"_" + time_now + ".txt"
         file = open(path + file_name, "w")
         file.write(json.dumps(data))
         file.close()
-        self.logger.info("{0} Dosyaya Yazıldı.".format(name))
+        self.logger.info("{0} Written to File.".format(name))
 
     def arff_to_file(self, name, path, data):
-        time_now = str(datetime.datetime.now())[0:19].replace(" ", "_")
+        time_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         file_name = name + "_" + time_now + ".txt"
         file = open(path + file_name, "w")
         file.write(data)
         file.close()
-        self.logger.info("{0} Dosyaya Yazıldı.".format(name))
+        self.logger.info("{0} Written to File.".format(name))
+        
+    def conv_2_feat(self, urls):
+        parsed_domains = self.parser_object.parse(urls, 'unknown', len(urls))
+        features = self.rule_calculation.extraction(parsed_domains)
+        return features
 
 
 def main():
 
     """
-    konsoldan girilen dataset ve class parametresine gore loop
-    kac adet adet dataset paramtre olarak girildiyse sirayla domainler parse edilerek
-    hepsi tek bir degiskende(parsed_domain) toplanir.
-    Girilen parametlerin dofrulugu kontrol edilir.
+    loop according to dataset and class parameter entered from console
+    If the dataset is entered as a paramter, the domains are parsed
+    they are all collected in a single variable (parsed_domain).
+    The entered parameters are checked.
 
-    python main.py dataset1 class1 dataset2 class2 ... seklinde girilmelidir
+    python main.py must be entered in dataset1 class1 dataset2 class2 ...
+    e.g.
+    python train.py ../input/data_legitimate_36400.json legitimate ../input/data_phishing_37175.json phish
 
-    Girilen class isimleri phish yada legitimate olmalidir. Aksi takdirde islenmez.
+    The entered class names must be phish or legitimate. Otherwise it is not.
 
-    ozelliklerin cikarimasi icin parse edilen domainler rule_calculation nesnesine verilir
-    islenen domainlerin ciktisi
+    The fields that are parsed are given to the rule_calculation object.
+    output of domains
 
-    hesaplanan ozellik degerlerinin weka ile test edilebilmesi icin
-    arff formatina cevirilip dosyaya yazilmasi
+    to test the calculated property values ​​with weka
+    arff format
     """
 
     tr_obj = Train()
     parsed_domains = tr_obj.domain_parser(sys.argv)
-    tr_obj.json_to_file("parse", tr_obj.path_parsed_domain, parsed_domains)
+    # tr_obj.json_to_file("parse", tr_obj.path_parsed_domain, parsed_domains)
 
     features = tr_obj.rule_calculation.extraction(parsed_domains)
-    tr_obj.json_to_file("features", tr_obj.path_features, features)
+    # tr_obj.json_to_file("features", tr_obj.path_features, features)
+    
+    tr_obj.logger.info('Convert features to DataFrame')
+    import pandas as pd
+    info_df = []
+    feat_df = []
+    for feature in tqdm(features):
+        info_df.append(feature['info'])
+        feat_df.append(feature['url_features'])
+    info_df = pd.DataFrame(info_df)
+    feat_df = pd.DataFrame(feat_df)
+    data_df = pd.concat([info_df, feat_df], axis=1)
+    data_df.to_csv('../output/digest_result/data.csv', index=False, encoding='utf8')
+    tr_obj.logger.info('Convert done')
 
     #features = json.loads(open("../output/features/gsb.txt", "r").read())
 
-    arff_str = tr_obj.json2arff_object.convert_for_train(features, '') # todo active_features icin -a param girilecek
-    tr_obj.arff_to_file("arff", tr_obj.path_arff, arff_str)
+    # arff_str = tr_obj.json2arff_object.convert_for_train(features, '') # todo active_features icin -a param girilecek
+    # tr_obj.arff_to_file("arff", tr_obj.path_arff, arff_str)
 
 
 if __name__=="__main__":
